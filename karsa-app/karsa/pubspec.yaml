@@ -1,0 +1,52 @@
+name: karsa
+description: "A new Flutter project."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.11.1
+  flutter_riverpod: ^2.4.0
+  hugeicons: ^1.2.0
+  flutter_svg: ^2.3.2
+  gap: ^3.0.1
+  flutter_secure_storage: ^9.0.0
+  intl: ^0.18.0
+  image_picker: ^1.0.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  # ... your assets here ...
+  assets:
+    - assets/icons/
+    - assets/images/
+    - assets/images/components/
+    - assets/images/components/overlay_cta_button.svg
+    - assets/images/components/o_b_1.png
+
+  # 1. NO DASH HERE. Just 'fonts:'
+  fonts:
+    # 2. The dash goes HERE, before 'family'
+    - family: Satoshi
+      # 3. The inner 'fonts:' key has NO dash
+      fonts:
+        - asset: assets/fonts/Satoshi/Satoshi-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Satoshi/Satoshi-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Satoshi/Satoshi-Light.otf
+          weight: 300
+        - asset: assets/fonts/Satoshi/Satoshi-Bold.otf
+          weight: 700
+        - asset: assets/fonts/Satoshi/Satoshi-Black.otf
+          weight: 900
