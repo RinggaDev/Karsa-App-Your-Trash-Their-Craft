@@ -1,0 +1,12 @@
+﻿services:
+  karsa-backend:
+    build: ./karsa-backend
+    container_name: karsa-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./karsa-backend/.env
+    volumes:
+      - ./karsa-backend:/app
+      - /app/node_modules
+    restart: unless-stopped
