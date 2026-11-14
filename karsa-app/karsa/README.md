@@ -1,3 +1,3 @@
-# karsa
+# KARSA APP
 
-A new Flutter project.
+Please read README.md in the root folder for the monorepo documentation.
