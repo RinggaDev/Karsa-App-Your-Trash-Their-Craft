@@ -216,63 +216,62 @@ class StatusScreen extends ConsumerWidget {
                             final iconData = _statusIcons[statusKey]!;
                             final isLast = i == _statusList.length - 1;
 
-                            return IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Left indicator & connector line
-                                  SizedBox(
-                                    width: 38,
-                                    child: Column(
-                                      children: [
-                                        AnimatedContainer(
-                                          duration: const Duration(milliseconds: 300),
-                                          width: 36,
-                                          height: 36,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: isPassed
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Left indicator & connector line
+                                SizedBox(
+                                  width: 38,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: const Duration(milliseconds: 300),
+                                        width: 36,
+                                        height: 36,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: isPassed
+                                              ? AppColor.brand
+                                              : isCurrent
+                                                  ? AppColor.brandSoft
+                                                  : AppColor.background200,
+                                          border: Border.all(
+                                            color: isPassed || isCurrent
                                                 ? AppColor.brand
-                                                : isCurrent
-                                                    ? AppColor.brandSoft
-                                                    : AppColor.background200,
-                                            border: Border.all(
-                                              color: isPassed || isCurrent
-                                                  ? AppColor.brand
-                                                  : AppColor.cardBorder,
-                                              width: isCurrent ? 2 : 1.5,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: HugeIcon(
-                                              icon: isPassed
-                                                  ? HugeIcons.strokeRoundedCheckmarkBadge01
-                                                  : iconData,
-                                              size: 18,
-                                              color: isPassed
-                                                  ? AppColor.textOnBrand
-                                                  : isCurrent
-                                                      ? AppColor.brand
-                                                      : AppColor.textDisabled,
-                                            ),
+                                                : AppColor.cardBorder,
+                                            width: isCurrent ? 2 : 1.5,
                                           ),
                                         ),
-                                        if (!isLast)
-                                          Expanded(
-                                            child: Container(
-                                              width: 2.5,
-                                              margin: const EdgeInsets.symmetric(vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: isPassed
+                                        child: Center(
+                                          child: HugeIcon(
+                                            icon: isPassed
+                                                ? HugeIcons.strokeRoundedCheckmarkBadge01
+                                                : iconData,
+                                            size: 18,
+                                            color: isPassed
+                                                ? AppColor.textOnBrand
+                                                : isCurrent
                                                     ? AppColor.brand
-                                                    : AppColor.divider,
-                                                borderRadius: BorderRadius.circular(2),
-                                              ),
-                                            ),
+                                                    : AppColor.textDisabled,
                                           ),
-                                      ],
-                                    ),
+                                        ),
+                                      ),
+                                      if (!isLast)
+                                        Container(
+                                          width: 2.5,
+                                          height: isCurrent ? 52 : 34,
+                                          margin: const EdgeInsets.symmetric(vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: isPassed
+                                                ? AppColor.brand
+                                                : AppColor.divider,
+                                            borderRadius: BorderRadius.circular(2),
+                                          ),
+                                        ),
+                                    ],
                                   ),
+                                ),
                                   const Gap(14),
                                   // Right content card / details
                                   Expanded(
@@ -349,10 +348,9 @@ class StatusScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ],
-                              ),
-                            );
-                          },
-                        ),
+                              );
+                            },
+                          ),
                       ],
                     ],
                   ),
