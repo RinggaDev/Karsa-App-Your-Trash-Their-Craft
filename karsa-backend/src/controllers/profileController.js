@@ -4,7 +4,14 @@ export const getProfile = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('users').select('*').eq('id', req.user.id).single()
-    if (error) return res.status(500).json({ error: error.message })
+    if (error || !data) {
+      return res.json({
+        id: req.user.id,
+        email: req.user.email || '',
+        nama: req.user.user_metadata?.nama || (req.user.email || '').split('@')[0],
+        kota: req.user.user_metadata?.kota || ''
+      })
+    }
     res.json(data)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -15,8 +22,15 @@ export const updateProfile = async (req, res) => {
   try {
     const { nama, kota } = req.body
     const { data, error } = await supabase
-      .from('users').update({ nama, kota })
-      .eq('id', req.user.id).select().single()
+      .from('users')
+      .upsert({
+        id: req.user.id,
+        email: req.user.email || '',
+        nama,
+        kota
+      })
+      .select()
+      .single()
     if (error) return res.status(500).json({ error: error.message })
     res.json(data)
   } catch (err) {
