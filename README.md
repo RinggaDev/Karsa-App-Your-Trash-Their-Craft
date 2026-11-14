@@ -62,7 +62,7 @@ Every status below was verified directly against `karsa-app/karsa/lib/` and `kar
 | **UMKM Matching & Detail Sheet** | Done | `UmkmListScreen` & `UmkmDetailSheet` query `GET /api/v1/umkm?tipe_sampah=...` and `GET /api/v1/umkm/:id` (PostgreSQL tag filter, no AI). Confirmation creates submission via `POST /api/v1/submissions`. |
 | **Active Deliveries & Status Tracking** | Partial | `PengantaranScreen` (`GET /api/v1/submissions/active`) and `StatusScreen` (`GET /api/v1/submissions/:id`) show live submission status across 4 stages (`pending`, `confirmed`, `picked_up`, `done`). However, `status_history[].changed_at` timestamps returned by the backend are not rendered on screen, and status progression is updated manually in Supabase for demo. |
 | **Recap & History Filtering** | Done | `RiwayatScreen` fetches `GET /api/v1/recap` with client-side filter tabs (`Semua`, `Aktif`, `Selesai`) and aggregate stats. |
-| **AI Micro Insight (Per Session)** | Done | `SummaryScreen` (`Lihat Dampakmu` CTA when `status === 'done'`) calls `POST /api/v1/insight/micro` backed by Gemini (`gemini-2.0-flash`) with permanent DB cache + template fallback if Gemini fails/times out. |
+| **AI Micro Insight (Per Session)** | Done | `SummaryScreen` (`Lihat Dampakmu` CTA when `status === 'done'`) calls `POST /api/v1/insight/micro` backed by Gemini (`gemini-3.5-flash-lite`) with permanent DB cache + template fallback if Gemini fails/times out. |
 | **AI Macro Insight (Wawasan)** | Partial | `WawasanScreen` calls `GET /api/v1/users/stats` and `GET /api/v1/insight/macro?periode=weekly` (24h DB cache + template fallback). `periode` is hardcoded to `weekly`; no UI toggle exists for `monthly`. |
 | **Profile View, Edit & Logout** | Done | `ProfileScreen` syncs `GET /api/v1/users/profile`, updates `nama`/`kota` via `PUT /api/v1/users/profile`, and clears local storage on logout. |
 
@@ -84,7 +84,7 @@ Verified from `karsa-backend/package.json`, `karsa-backend/Dockerfile`, and `kar
 - **Runtime & Framework:** Node.js 22 (`node:22-alpine` ESM) + `express` (`^5.3.0`)
 - **Middleware & Utilities:** `cors` (`^2.8.6`), `dotenv` (`^18.0.10`), `multer` (`^2.5.0`, `memoryStorage`)
 - **Database, Auth & Storage:** Supabase (`@supabase/supabase-js` `^2.119.0`) — Cloud PostgreSQL, Supabase Auth (JWT), Supabase Storage (`trash-photos` public bucket)
-- **AI Service:** Google Gemini API via `@google/generative-ai` (`^0.24.1`), configured with `gemini-2.0-flash`
+- **AI Service:** Google Gemini API via `@google/generative-ai` (`^0.24.1`), configured with `gemini-3.5-flash-lite`
 - **Containerization:** Docker & Docker Compose (`karsa-backend` on port `3000`)
 
 ---
@@ -118,7 +118,7 @@ Verified from `karsa-backend/package.json`, `karsa-backend/Dockerfile`, and `kar
 +---------------------------------+   +-----------------------------+
 |        Supabase (Cloud)         |   |    Google Gemini API        |
 |  - Auth (getUser / signIn)      |   |  (@google/generative-ai)    |
-|  - PostgreSQL (users, umkm,     |   |  Model: gemini-2.0-flash    |
+|  - PostgreSQL (users, umkm,     |   | Model: gemini-3.5-flash-lite|
 |    submissions, status_history, |   |  (Micro & Macro Insights)   |
 |    insights)                    |   +-----------------------------+
 |  - Storage (bucket:             |
@@ -232,7 +232,7 @@ Defined in `karsa-backend/.env.example` (variable names only — never commit re
 ## 14. AI Usage Documentation
 
 - **Provider & SDK:** Google Gemini API via `@google/generative-ai` (`^0.24.1`).
-- **Model Configured in Code:** **`gemini-2.0-flash`** (`maxOutputTokens: 350`, `temperature: 0.8`) in `karsa-backend/src/config/gemini.js`.
+- **Model Configured in Code:** **`gemini-3.5-flash-lite`** (`maxOutputTokens: 350`, `temperature: 0.8`) in `karsa-backend/src/config/gemini.js`.
 - **Technique:** Runtime context injection (no RAG or vector database). Backend queries Supabase for user stats, waste types, weight, CO₂ estimate, and UMKM product info, then injects them into an Indonesian conversational prompt.
 - **Features Using AI:**
   1. **Micro Insight (`POST /api/v1/insight/micro`):** Generates 2–3 celebratory sentences upon submission completion (`SummaryScreen`).
@@ -311,7 +311,7 @@ Only measures directly verified in the codebase:
 1. **Manual Status Progression:** There is no UMKM login or dashboard in this MVP; submission status transitions (`pending` → `confirmed` → `picked_up` → `done`) are updated manually in Supabase for demo purposes.
 2. **CO₂ Estimation Factor:** `co2_saved` uses a rough static multiplier (`berat_kg × 1.5`), and `WawasanScreen` derives tree equivalents via `co2Saved / 21.0`. Both are estimates only — factor citation: `[ISI: sumber]`.
 3. **Code vs. PRD/SPEC Deviations:**
-   - **Gemini Model:** Backend code (`src/config/gemini.js`) uses `gemini-2.0-flash`, whereas PRD/SPEC specify `Gemini 1.5 Flash`.
+   - **Gemini Model:** Backend code (`src/config/gemini.js`) uses `gemini-3.5-flash-lite`, whereas PRD/SPEC specify `Gemini 1.5 Flash`.
    - **Onboarding Screen:** `OnboardingScreen` exists in `lib/` (`PUT /users/profile`), but `SignUpScreen` already collects `nama` and `kota` and navigates directly to `MainShell`.
    - **Status Timestamps:** `GET /submissions/:id` returns `status_history[]` timestamps, but `StatusScreen` renders static step copy without displaying timestamps.
    - **Wawasan Period & Extra Estimates:** `WawasanScreen` hardcodes `periode=weekly` (no UI switcher for `monthly`). `SummaryScreen` additionally displays a client-side estimated MSME income (`beratKg * 10000`) and `WawasanScreen` shows tree equivalents (`co2Saved / 21.0`), neither of which comes from the backend API.
