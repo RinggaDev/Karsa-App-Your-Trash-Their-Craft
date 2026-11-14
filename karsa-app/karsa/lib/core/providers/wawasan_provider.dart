@@ -35,8 +35,20 @@ class WawasanNotifier extends StateNotifier<AsyncValue<MacroInsightData>> {
 
   Future<UserStats> _fetchStatsSafe() async {
     try {
-      final res = await _dio.get(ApiUrls.userStats);
-      return UserStats.fromJson(res.data as Map<String, dynamic>);
+      final res = await _dio.get(
+        ApiUrls.userStats,
+        options: Options(validateStatus: (_) => true),
+      );
+      if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
+        return UserStats.fromJson(res.data as Map<String, dynamic>);
+      }
+      return const UserStats(
+        totalKg: 0,
+        totalSubmissions: 0,
+        totalActive: 0,
+        totalUmkmHelped: 0,
+        co2Saved: 0,
+      );
     } catch (_) {
       return const UserStats(
         totalKg: 0,
@@ -53,12 +65,16 @@ class WawasanNotifier extends StateNotifier<AsyncValue<MacroInsightData>> {
       final res = await _dio.get(
         ApiUrls.insightMacro,
         queryParameters: {'periode': periode},
-        options: Options(receiveTimeout: const Duration(seconds: 30)),
+        options: Options(
+          receiveTimeout: const Duration(seconds: 12),
+          validateStatus: (_) => true,
+        ),
       );
-      return res.data as Map<String, dynamic>;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
+      if (res.statusCode == 404) {
         return const {'_empty': true};
+      }
+      if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
+        return res.data as Map<String, dynamic>;
       }
       return null;
     } catch (_) {
