@@ -1,18 +1,45 @@
 // lib/core/constants/api_urls.dart
 
+import 'package:flutter/foundation.dart';
+
 class ApiUrls {
   ApiUrls._();
 
   // ─── Base URL ───────────────────────────────────────────────
   // Android emulator → host localhost via bridge IP
-  static const String _emulatorBase = 'http://10.0.2.2:3000/api/v1';
+  static const String emulatorBase = 'http://10.0.2.2:3000/api/v1';
 
-  // Physical device → LAN IP mesin yang menjalankan Docker
-  // Ganti IP ini sesuai jaringan kamu (cek dengan `ipconfig` di mesin Person 1)
-  static const String physicalBase = 'http://192.168.1.10:3000/api/v1';
+  // Physical device → LAN IP mesin yang menjalankan backend (`ipconfig` Wi-Fi)
+  static const String physicalBase = 'http://172.20.3.200:3000/api/v1';
 
-  // ⚠️ Ganti ke physicalBase saat test di HP fisik
-  static const String baseUrl = _emulatorBase;
+  // Web / Desktop / iOS Simulator / Android USB (`adb reverse tcp:3000 tcp:3000`)
+  static const String localhostBase = 'http://localhost:3000/api/v1';
+  static const String loopbackBase = 'http://127.0.0.1:3000/api/v1';
+
+  // Default Base URL berdasarkan platform
+  static String get baseUrl {
+    if (kIsWeb) return localhostBase;
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return emulatorBase;
+    }
+    return localhostBase;
+  }
+
+  // Kandidat URL untuk auto-discovery / fallback di DioClient
+  static List<String> get candidateBaseUrls {
+    if (kIsWeb) {
+      return const [localhostBase, loopbackBase, physicalBase];
+    }
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return const [
+        emulatorBase,
+        physicalBase,
+        localhostBase,
+        loopbackBase,
+      ];
+    }
+    return const [localhostBase, loopbackBase, physicalBase];
+  }
 
   // ─── Auth ────────────────────────────────────────────────────
   static const String register = '/auth/register';
