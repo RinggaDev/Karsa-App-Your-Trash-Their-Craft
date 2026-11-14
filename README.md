@@ -8,7 +8,7 @@
 
 ## 1. Team
 
-- **Team Name:** `[ISI: NAMA TIM]`
+- **Team Name:** `Persevtech`
 - **Members:**
   - `Dhabith Zabran Tringgana` — Flutter Developer, Backend & AI Engineer
   - `Abdurrahman Al Ghifary` — UI/UX & Product Designer
@@ -209,8 +209,8 @@ Defined in `karsa-backend/.env.example` (variable names only — never commit re
 
 ## 12. Demo Account
 
-- **Email:** `[ISI: EMAIL DEMO]`
-- **Password:** `[ISI: PASSWORD DEMO]`
+- **Email:** `testing1@karsa.com`
+- **Password:** `kara@karsa123`
 
 > **Note to Judge:** This account is pre-seeded with 1 `'pending'` and 1 `'done'` submission. Navigate to the `'Riwayat'` tab or `'Status'` screen to immediately test the AI Micro Insight feature without completing the full flow.
 
@@ -273,8 +273,8 @@ Defined in `karsa-backend/.env.example` (variable names only — never commit re
 - `flutter_lints` (`^6.0.0`) — Dart static lint rules
 
 ### Bundled Fonts, Icons & Visual Assets (`karsa-app/karsa/assets/`)
-- **Typography:** `Satoshi` (`Satoshi-Regular.otf`, `Satoshi-Medium.otf`, `Satoshi-Light.otf`, `Satoshi-Bold.otf`, `Satoshi-Black.otf` and italic variants in `assets/fonts/Satoshi/`) — `[ISI: sumber/lisensi font Satoshi]`
-- **Illustrations & App Graphics (`assets/images/components/`):** `o_b_1.png`, `o_b_2.png`, `karsa_icon.png`, `karsa_icon.svg`, `feature_button.svg`, `feature_button.png`, `overlay_cta_button.svg`, `overlay_summary_screen.svg` — created/exported by Karsa team (`[ISI: konfirmasi orisinalitas aset desain]`).
+- **Typography:** `Satoshi` (`Satoshi-Regular.otf`, `Satoshi-Medium.otf`, `Satoshi-Light.otf`, `Satoshi-Bold.otf`, `Satoshi-Black.otf` and italic variants in `assets/fonts/Satoshi/`) — `ITF Free Font License`
+- **Illustrations & App Graphics (`assets/images/components/`):** `o_b_1.png`, `o_b_2.png`, `karsa_icon.png`, `karsa_icon.svg`, `feature_button.svg`, `feature_button.png`, `overlay_cta_button.svg`, `overlay_summary_screen.svg` — created/exported by Karsa team (`Asli Buatan Tim Design`).
 - **Icons (`assets/icons/`):** `dev-apple.svg`, `dev-google.svg` (unused in active UI; bundled in assets).
 
 ---
@@ -332,26 +332,3 @@ Only measures directly verified in the codebase:
 - **AI Photo Classification & HTTPS:** Optional material pre-classification from waste photos and TLS/HTTPS enforcement with private signed storage URLs.
 
 ---
-
-## 20. Submission Checklist (Team Internal Use)
-
-- [ ] Repository is **Public** on GitHub
-- [ ] `.env` is **NOT** in the repository, and `.env.example` exists
-- [ ] Video Demo (**3:00–5:00 minutes**) uploaded to YouTube (Unlisted or Public)
-- [ ] **Surat Pernyataan Orisinalitas Karya** (PDF + Rp10.000 meterai / e-meterai) signed and ready
-- [ ] Final commit hash recorded for the submission portal before **14 November 2026, 23:59 WIB**
-- [ ] Demo account credentials filled in Section 12
-- [ ] All `[ISI: ...]` placeholders replaced before final freeze
-
----
-
-### TODO Before Submission (All `[ISI: ...]` Placeholders)
-
-- `[ISI: NAMA TIM]` (Section 1)
-- `[ISI: NAMA ANGGOTA 1]`, `[ISI: NAMA ANGGOTA 2]`, `[ISI: NAMA ANGGOTA 3]` (Section 1)
-- `[ISI: EMAIL DEMO]` (Section 12)
-- `[ISI: PASSWORD DEMO]` (Section 12)
-- `[ISI: sumber/lisensi font Satoshi]` (Section 15)
-- `[ISI: konfirmasi orisinalitas aset desain]` (Section 15)
-- `[ISI: sumber]` for the CO₂ estimation factor `1.5 kg CO₂ / kg waste` and tree factor `21 kg CO₂ / tree / year` (Section 18)
-
