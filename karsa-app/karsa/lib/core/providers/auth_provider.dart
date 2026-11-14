@@ -1,10 +1,70 @@
 // lib/core/providers/auth_provider.dart
 
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:karsa/core/constants/api_urls.dart';
 import 'package:karsa/core/services/dio_client.dart';
 import 'package:karsa/core/services/storage_service.dart';
+
+// ─── Helper: Decode JWT payload jika user profile dari DB bernilai null ─────
+Map<String, dynamic> _decodeJwtPayload(String token) {
+  try {
+    final parts = token.split('.');
+    if (parts.length != 3) return const {};
+    final normalized = base64Url.normalize(parts[1]);
+    final decoded = utf8.decode(base64Url.decode(normalized));
+    final map = jsonDecode(decoded);
+    return map is Map<String, dynamic> ? map : const {};
+  } catch (_) {
+    return const {};
+  }
+}
+
+UserModel _parseAuthUser(
+  Map<String, dynamic> data, {
+  required String token,
+  required String fallbackEmail,
+  String fallbackNama = '',
+  String fallbackKota = '',
+}) {
+  final rawUser = data['user'];
+  final jwt = _decodeJwtPayload(token);
+  final jwtMeta = jwt['user_metadata'] is Map<String, dynamic>
+      ? jwt['user_metadata'] as Map<String, dynamic>
+      : const <String, dynamic>{};
+
+  if (rawUser is Map<String, dynamic>) {
+    final parsed = UserModel.fromJson(rawUser);
+    return UserModel(
+      id: parsed.id.isNotEmpty ? parsed.id : (jwt['sub']?.toString() ?? ''),
+      email: parsed.email.isNotEmpty
+          ? parsed.email
+          : (jwt['email']?.toString() ?? fallbackEmail),
+      nama: parsed.nama.isNotEmpty
+          ? parsed.nama
+          : (jwtMeta['nama']?.toString() ??
+              (fallbackNama.isNotEmpty
+                  ? fallbackNama
+                  : fallbackEmail.split('@').first)),
+      kota: parsed.kota.isNotEmpty
+          ? parsed.kota
+          : (jwtMeta['kota']?.toString() ?? fallbackKota),
+    );
+  }
+
+  return UserModel(
+    id: jwt['sub']?.toString() ?? '',
+    email: jwt['email']?.toString() ?? fallbackEmail,
+    nama: jwtMeta['nama']?.toString() ??
+        (fallbackNama.isNotEmpty
+            ? fallbackNama
+            : fallbackEmail.split('@').first),
+    kota: jwtMeta['kota']?.toString() ?? fallbackKota,
+  );
+}
 
 // ─── User Model ─────────────────────────────────────────────────
 class UserModel {
@@ -140,9 +200,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
         data: {'email': email, 'password': password},
       );
 
-      final data = response.data as Map<String, dynamic>;
-      final user = UserModel.fromJson(data['user'] as Map<String, dynamic>);
-      final token = data['token'] as String;
+      final data = response.data is Map<String, dynamic>
+          ? response.data as Map<String, dynamic>
+          : <String, dynamic>{};
+      final token = (data['token'] as String?) ?? '';
+      final user = _parseAuthUser(
+        data,
+        token: token,
+        fallbackEmail: email,
+      );
 
       // Simpan ke secure storage
       await StorageService.saveToken(token);
@@ -161,6 +227,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         welcomeMessage:
             'Berhasil login kembali! Apa yang mau kamu angkut hari ini?',
       );
+
+      if (user.kota.isEmpty) {
+        fetchProfile();
+      }
       return true;
     } on DioException catch (e) {
       state = state.copyWith(
@@ -169,7 +239,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isAuthenticated: false,
       );
       return false;
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('AuthNotifier.login unexpected error: $e\n$st');
       state = state.copyWith(
         isLoading: false,
         error: 'Ada yang gak beres nih. Coba lagi ya!',
@@ -199,9 +270,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
         },
       );
 
-      final data = response.data as Map<String, dynamic>;
-      final user = UserModel.fromJson(data['user'] as Map<String, dynamic>);
-      final token = data['token'] as String;
+      final data = response.data is Map<String, dynamic>
+          ? response.data as Map<String, dynamic>
+          : <String, dynamic>{};
+      final token = (data['token'] as String?) ?? '';
+      final user = _parseAuthUser(
+        data,
+        token: token,
+        fallbackEmail: email,
+        fallbackNama: nama,
+        fallbackKota: kota,
+      );
 
       // Simpan ke secure storage
       await StorageService.saveToken(token);
@@ -226,7 +305,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isAuthenticated: false,
       );
       return false;
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('AuthNotifier.register unexpected error: $e\n$st');
       state = state.copyWith(
         isLoading: false,
         error: 'Ada yang gak beres nih. Coba lagi ya!',
@@ -247,13 +327,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
         ApiUrls.userProfile,
         data: {'nama': nama, 'kota': kota},
       );
-      final data = response.data as Map<String, dynamic>;
+      final data = response.data is Map<String, dynamic>
+          ? response.data as Map<String, dynamic>
+          : <String, dynamic>{};
       final old = state.user;
       final user = UserModel(
-        id: data['id'] as String? ?? old?.id ?? '',
-        email: old?.email ?? '',
-        nama: data['nama'] as String? ?? nama,
-        kota: data['kota'] as String? ?? kota,
+        id: (data['id'] as String?) ?? old?.id ?? '',
+        email: (data['email'] as String?) ?? old?.email ?? '',
+        nama: (data['nama'] as String?) ?? nama,
+        kota: (data['kota'] as String?) ?? kota,
       );
       await StorageService.saveUserName(user.nama);
       await StorageService.saveUserKota(user.kota);
@@ -263,7 +345,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on DioException catch (e) {
       state = state.copyWith(isLoading: false, error: handleDioError(e));
       return false;
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('AuthNotifier.updateProfile unexpected error: $e\n$st');
       state = state.copyWith(
         isLoading: false,
         error: 'Ada yang gak beres nih. Coba lagi ya!',
