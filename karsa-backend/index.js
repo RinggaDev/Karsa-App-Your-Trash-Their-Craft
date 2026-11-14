@@ -24,4 +24,4 @@ app.use('/api/v1/upload', uploadRoutes)
 app.get('/health', (_, res) => res.json({ status: 'ok', app: 'Karsa API' }))
 
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log(`Karsa API running on :${PORT}`))
+app.listen(PORT, '0.0.0.0', () => console.log(`Karsa API running on http://0.0.0.0:${PORT}`))
