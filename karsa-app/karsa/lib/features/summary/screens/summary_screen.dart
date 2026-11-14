@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:gap/gap.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:karsa/core/constants/app_colors.dart';
@@ -92,9 +91,11 @@ class SummaryScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ══════════════════════════════════════════════════
-                    // 1. HERO CONTAINER (Overlay SVG + Kg dikirim & UMKM terbantu)
+                    // 1. HERO CONTAINER (Kg dikirim & UMKM terbantu)
                     // ══════════════════════════════════════════════════
-                    _SummaryHeroCard(beratKg: beratKg),
+                    RepaintBoundary(
+                      child: _SummaryHeroCard(beratKg: beratKg),
+                    ),
                     const Gap(24),
 
                     // ══════════════════════════════════════════════════
@@ -107,58 +108,58 @@ class SummaryScreen extends ConsumerWidget {
                       ),
                     ),
                     const Gap(12),
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: _SimpleImpactCard(
-                              iconBgColor: AppColor.surface200,
-                              iconWidget: const HugeIcon(
-                                icon: HugeIcons.strokeRoundedLeaf02,
-                                color: AppColor.brand,
-                                size: 20,
-                              ),
-                              value: '~${co2Saved.toStringAsFixed(1)}',
-                              unit: 'kg',
-                              label: 'Estimasi pengurangan CO₂',
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _SimpleImpactCard(
+                            iconBgColor: AppColor.surface200,
+                            iconWidget: const HugeIcon(
+                              icon: HugeIcons.strokeRoundedLeaf02,
+                              color: AppColor.brand,
+                              size: 20,
                             ),
+                            value: '~${co2Saved.toStringAsFixed(1)}',
+                            unit: 'kg',
+                            label: 'Estimasi pengurangan CO₂',
                           ),
-                          const Gap(12),
-                          Expanded(
-                            child: _SimpleImpactCard(
-                              iconBgColor: const Color(0xFFFEF3DC),
-                              iconWidget: const Icon(
-                                Icons.monetization_on_outlined,
-                                color: Color(0xFFD88B00),
-                                size: 20,
-                              ),
-                              value: '~Rp ${_formatRupiah(estimasiRupiah)}',
-                              label: 'Mendukung penghasilan UMKM',
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _SimpleImpactCard(
+                            iconBgColor: const Color(0xFFFEF3DC),
+                            iconWidget: const Icon(
+                              Icons.monetization_on_outlined,
+                              color: Color(0xFFD88B00),
+                              size: 20,
                             ),
+                            value: '~Rp ${_formatRupiah(estimasiRupiah)}',
+                            label: 'Mendukung penghasilan UMKM',
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     const Gap(24),
 
                     // ══════════════════════════════════════════════════
                     // 3. INSIGHT AI (Dihasilkan oleh AI)
                     // ══════════════════════════════════════════════════
-                    _AiMicroInsightContainer(
-                      child: insightAsync.when(
-                        loading: () => const _InsightLoading(),
-                        error: (e, _) => _InsightFallback(
-                          message: e is String ? e : kInsightFallback,
-                          onRetry: () => ref
-                              .read(summaryProvider(submissionId).notifier)
-                              .refresh(submissionId),
-                        ),
-                        data: (insight) => Text(
-                          insight,
-                          style: AppTextStyle.paragraph1Regular.copyWith(
-                            color: AppColor.text700,
-                            height: 1.5,
+                    RepaintBoundary(
+                      child: _AiMicroInsightContainer(
+                        child: insightAsync.when(
+                          loading: () => const _InsightLoading(),
+                          error: (e, _) => _InsightFallback(
+                            message: e is String ? e : kInsightFallback,
+                            onRetry: () => ref
+                                .read(summaryProvider(submissionId).notifier)
+                                .refresh(submissionId),
+                          ),
+                          data: (insight) => Text(
+                            insight,
+                            style: AppTextStyle.paragraph1Regular.copyWith(
+                              color: AppColor.text700,
+                              height: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -201,7 +202,7 @@ class SummaryScreen extends ConsumerWidget {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// 1. HERO CONTAINER (Seperti di wawasan_screen.dart:L163-L280 + Mockup)
+// 1. HERO CONTAINER (Native Gradient setara overlay_summary_screen.svg)
 // ══════════════════════════════════════════════════════════════════
 class _SummaryHeroCard extends StatelessWidget {
   const _SummaryHeroCard({required this.beratKg});
@@ -211,121 +212,110 @@ class _SummaryHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
+        color: const Color(0xFFF9F9F9),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: const Alignment(0.4, 1.4),
+          colors: [
+            const Color(0xFF5E9C4B).withValues(alpha: 0.06),
+            const Color(0xFF96DE7E).withValues(alpha: 0.36),
+          ],
+        ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: AppColor.primary400.withValues(alpha: 0.55),
-          width: 0.3,
+          width: 0.5,
         ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(19),
-        child: Stack(
-          children: [
-            // Background SVG Overlay
-            Positioned.fill(
-              child: SvgPicture.asset(
-                'assets/images/components/overlay_summary_screen.svg',
-                fit: BoxFit.cover,
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Keren, kamu sudah\nberkontribusi! 🎉',
+            style: AppTextStyle.heading4Bold.copyWith(
+              color: AppColor.brandDark,
+              height: 1.25,
             ),
+          ),
+          const Gap(18),
 
-            // Konten
-            Padding(
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Keren, kamu sudah\nberkontribusi! 🎉',
-                    style: AppTextStyle.heading4Bold.copyWith(
-                      color: AppColor.brandDark,
-                      height: 1.25,
-                    ),
-                  ),
-                  const Gap(18),
-
-                  // Box Putih Status: Kg yang dikirim & UMKM terbantu
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColor.surfaceWhite.withValues(alpha: 0.92),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
+          // Box Putih Status: Kg yang dikirim & UMKM terbantu
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 14,
+            ),
+            decoration: BoxDecoration(
+              color: AppColor.surfaceWhite.withValues(alpha: 0.92),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Stat 1: Kg yang dikirim
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Stat 1: Kg yang dikirim
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                Text(
-                                  beratKg.toStringAsFixed(1),
-                                  style: AppTextStyle.heading4Bold.copyWith(
-                                    color: AppColor.text700,
-                                  ),
-                                ),
-                                const Gap(4),
-                                Text(
-                                  'kg',
-                                  style: AppTextStyle.paragraph1Semibold
-                                      .copyWith(
-                                        color: AppColor.brandDark,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            const Gap(2),
-                            Text(
-                              'Kg yang dikirim',
-                              style: AppTextStyle.label1Regular.copyWith(
-                                color: AppColor.textSecondary,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          beratKg.toStringAsFixed(1),
+                          style: AppTextStyle.heading4Bold.copyWith(
+                            color: AppColor.text700,
+                          ),
                         ),
-                        const Gap(24),
-                        Container(
-                          width: 1,
-                          height: 34,
-                          color: AppColor.divider,
-                        ),
-                        const Gap(24),
-
-                        // Stat 2: UMKM terbantu
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '1',
-                              style: AppTextStyle.heading4Bold.copyWith(
-                                color: AppColor.text700,
-                              ),
-                            ),
-                            const Gap(2),
-                            Text(
-                              'UMKM terbantu',
-                              style: AppTextStyle.label1Regular.copyWith(
-                                color: AppColor.textSecondary,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 4),
+                        Text(
+                          'kg',
+                          style: AppTextStyle.paragraph1Semibold.copyWith(
+                            color: AppColor.brandDark,
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Kg yang dikirim',
+                      style: AppTextStyle.label1Regular.copyWith(
+                        color: AppColor.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 24),
+                Container(
+                  width: 1,
+                  height: 34,
+                  color: AppColor.divider,
+                ),
+                const SizedBox(width: 24),
+
+                // Stat 2: UMKM terbantu
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '1',
+                      style: AppTextStyle.heading4Bold.copyWith(
+                        color: AppColor.text700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'UMKM terbantu',
+                      style: AppTextStyle.label1Regular.copyWith(
+                        color: AppColor.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -352,6 +342,7 @@ class _SimpleImpactCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: const BoxConstraints(minHeight: 84),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
         color: AppColor.background200,
@@ -369,36 +360,32 @@ class _SimpleImpactCard extends StatelessWidget {
             ),
             child: Center(child: iconWidget),
           ),
-          const Gap(10),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.end,
+                  spacing: 4,
                   children: [
-                    Flexible(
-                      child: Text(
-                        value,
-                        style: AppTextStyle.subheading1Semibold.copyWith(
-                          color: AppColor.text700,
-                        ),
+                    Text(
+                      value,
+                      style: AppTextStyle.subheading1Semibold.copyWith(
+                        color: AppColor.text700,
                       ),
                     ),
-                    if (unit != null) ...[
-                      const Gap(4),
+                    if (unit != null)
                       Text(
                         unit!,
                         style: AppTextStyle.paragraph2Regular.copyWith(
                           color: AppColor.text400,
                         ),
                       ),
-                    ],
                   ],
                 ),
-                const Gap(2),
+                const SizedBox(height: 2),
                 Text(
                   label,
                   style: AppTextStyle.label1Regular.copyWith(
@@ -478,12 +465,14 @@ class _InsightLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const SizedBox(
-          width: 18,
-          height: 18,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: AppColor.brand,
+        const RepaintBoundary(
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColor.brand,
+            ),
           ),
         ),
         const Gap(10),
